@@ -7,7 +7,10 @@ import { getVerificationEmailHtml, getVerificationEmailText } from '@/lib/emails
 import { randomUUID } from 'crypto'
 
 // Load environment variables from .env.local (Next.js convention)
-config({ path: '.env.local' })
+// This is safe on Vercel - dotenv won't throw if file doesn't exist
+if (process.env.NODE_ENV !== 'production') {
+  config({ path: '.env.local' })
+}
 
 export async function POST(request: NextRequest) {
   try {

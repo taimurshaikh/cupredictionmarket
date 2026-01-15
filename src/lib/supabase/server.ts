@@ -3,7 +3,10 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 // Load environment variables from .env.local (Next.js convention)
-config({ path: '.env.local' })
+// This is safe on Vercel - dotenv won't throw if file doesn't exist
+if (process.env.NODE_ENV !== 'production') {
+  config({ path: '.env.local' })
+}
 
 export async function createClient() {
   const cookieStore = await cookies()
