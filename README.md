@@ -1,8 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CU Prediction Market
 
-## Getting Started
+This is a [Next.js](https://nextjs.org) project for the Columbia University prediction market platform.
 
-First, run the development server:
+## Setup Instructions
+
+### 1. Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://yjxtypfnietbobqoqglm.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqeHR5cGZuaWV0Ym9icW9xZ2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMjM4OTgsImV4cCI6MjA4Mzg5OTg5OH0.gZNRUdB02AV6k2szR4j1M7YxRi8zSMoHu5TqY0j938s
+
+# Resend API Key (get from https://resend.com/api-keys)
+RESEND_API_KEY=your_resend_api_key_here
+
+# Application URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+**Note:** Replace `your_resend_api_key_here` with your actual Resend API key from [https://resend.com/api-keys](https://resend.com/api-keys).
+
+### 2. Supabase Setup
+
+The Supabase project "CU Prediction Market" is already configured with:
+- **Project URL:** `https://yjxtypfnietbobqoqglm.supabase.co`
+- **Waitlist table** created with the following schema:
+  - `id` (UUID, primary key)
+  - `email` (TEXT, unique, not null)
+  - `verified` (BOOLEAN, default: false)
+  - `verification_token` (TEXT, unique)
+  - `created_at` (TIMESTAMPTZ, default: now())
+  - `verified_at` (TIMESTAMPTZ, nullable)
+
+### 3. Resend Email Setup
+
+1. Sign up for a Resend account at [https://resend.com](https://resend.com)
+2. Create an API key from the dashboard
+3. Add the API key to your `.env.local` file
+4. Update the `from` email address in `src/app/api/waitlist/route.ts` to use your verified domain (currently set to `onboarding@resend.dev` for testing)
+
+### 4. Running the Development Server
 
 ```bash
 npm run dev
@@ -16,21 +55,33 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Waitlist Signup:** Columbia email validation using Zod
+- **Email Verification:** Resend-powered email verification flow
+- **Waitlist Position:** Real-time position tracking based on signup order
+- **Supabase Integration:** Full database integration for waitlist management
+
+## Project Structure
+
+- `src/app/page.tsx` - Main landing page with waitlist form
+- `src/app/api/waitlist/route.ts` - Waitlist signup API endpoint
+- `src/app/api/verify-email/route.ts` - Email verification endpoint
+- `src/lib/supabase/` - Supabase client utilities
+- `src/lib/validations/waitlist.ts` - Zod validation schemas
+- `src/lib/resend.ts` - Resend email client
+- `src/lib/emails/verification-email.tsx` - Email template
 
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Supabase Documentation](https://supabase.com/docs) - learn about Supabase features.
+- [Resend Documentation](https://resend.com/docs) - learn about Resend email API.
 
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Important:** Remember to add all environment variables to your Vercel project settings before deploying.
