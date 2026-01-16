@@ -226,6 +226,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isVerificationPending, setIsVerificationPending] = useState(false);
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -247,9 +248,21 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const verified = params.get('verified');
+    const position = params.get('position');
+    const emailParam = params.get('email');
     const message = params.get('message');
     
     if (verified === 'true') {
+      // User has verified their email - show full success dashboard
+      if (position) {
+        setWaitlistPosition(parseInt(position, 10));
+      }
+      if (emailParam) {
+        setEmail(emailParam);
+      }
+      setIsSubmitted(true);
+      setIsVerificationPending(false);
+      
       if (message === 'success') {
         setToastMessage('Email verified successfully!');
         setShowToast(true);
@@ -316,9 +329,9 @@ export default function Home() {
         throw new Error(data.error || 'Failed to join waitlist');
       }
       
-      setWaitlistPosition(data.position);
-      setIsSubmitted(true);
-      setToastMessage(data.message || 'Successfully joined waitlist!');
+      // After signup, show verification pending state (not full success dashboard)
+      setIsVerificationPending(true);
+      setToastMessage(data.message || 'Please check your email to verify your address.');
       setShowToast(true);
     } catch (error) {
       console.error('Error joining waitlist:', error);
@@ -534,7 +547,7 @@ export default function Home() {
               className="w-full max-w-md"
             >
               <AnimatePresence mode="wait">
-                {!isSubmitted ? (
+                {!isVerificationPending && !isSubmitted ? (
                   <motion.div
                     key="email-form"
                     initial={{ opacity: 1, y: 0 }}
@@ -569,6 +582,38 @@ export default function Home() {
                         Be the first to trade. Limited early access spots.
                       </p>
                     </form>
+                  </motion.div>
+                ) : isVerificationPending && !isSubmitted ? (
+                  <motion.div
+                    key="verification-pending"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                    className="success-enter"
+                  >
+                    <Card className="overflow-hidden border-0 glass-card">
+                      <CardContent className="p-6">
+                        {/* Verification Message Only */}
+                        <motion.div 
+                          className="flex items-start gap-3"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.15, duration: 0.3 }}
+                        >
+                          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/80 border border-amber-200/60 w-full">
+                            <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-amber-900 mb-1">Check your email</p>
+                              <p className="text-sm text-amber-800/90">
+                                We&apos;ve sent a verification link to <span className="font-medium">{email}</span>. Please verify your email to complete your signup.
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </CardContent>
+                    </Card>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -618,26 +663,6 @@ export default function Home() {
                             </div>
                           </motion.div>
                         )}
-                        
-                        {/* Verification Message */}
-                        <motion.div 
-                          className="mt-4"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.3 }}
-                        >
-                          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50/80 border border-amber-200/60">
-                            <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            <div>
-                              <p className="text-sm font-semibold text-amber-900 mb-1">Check your email</p>
-                              <p className="text-sm text-amber-800/90">
-                                We&apos;ve sent a verification link to <span className="font-medium">{email}</span>. Please verify your email to complete your signup.
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
                       </CardContent>
                     </Card>
                   </motion.div>

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     // Find user with this verification token
     const { data: user, error: findError } = await supabase
       .from('waitlist')
-      .select('id, email, verified')
+      .select('id, email, verified, created_at')
       .eq('verification_token', token)
       .single()
 
@@ -39,9 +39,20 @@ export async function GET(request: NextRequest) {
 
     // Check if already verified
     if (user.verified) {
-      return NextResponse.redirect(
-        new URL('/?verified=true&already=true', request.url)
-      )
+      // Fetch waitlist position for already verified user
+      const { count } = await supabase
+        .from('waitlist')
+        .select('*', { count: 'exact', head: true })
+        .lte('created_at', user.created_at)
+      
+      const position = count || 1
+      const baseUrl = new URL('/', request.url)
+      baseUrl.searchParams.set('verified', 'true')
+      baseUrl.searchParams.set('position', position.toString())
+      baseUrl.searchParams.set('email', user.email)
+      baseUrl.searchParams.set('message', 'already_verified')
+      
+      return NextResponse.redirect(baseUrl)
     }
 
     // Update user to verified
@@ -61,10 +72,27 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Redirect to success page
-    return NextResponse.redirect(
-      new URL('/?verified=true', request.url)
-    )
+    // Calculate waitlist position (count of users who signed up before or at the same time)
+    const { count, error: countError } = await supabase
+      .from('waitlist')
+      .select('*', { count: 'exact', head: true })
+      .lte('created_at', user.created_at)
+
+    if (countError) {
+      console.error('Error calculating waitlist position:', countError)
+      // Continue even if position calculation fails
+    }
+
+    const waitlistPosition = count || 1
+
+    // Redirect to success page with position and email
+    const baseUrl = new URL('/', request.url)
+    baseUrl.searchParams.set('verified', 'true')
+    baseUrl.searchParams.set('position', waitlistPosition.toString())
+    baseUrl.searchParams.set('email', user.email)
+    baseUrl.searchParams.set('message', 'success')
+    
+    return NextResponse.redirect(baseUrl)
   } catch (error) {
     console.error('Unexpected error in verify-email route:', error)
     return NextResponse.json(

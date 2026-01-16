@@ -75,19 +75,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calculate waitlist position (count of users who signed up before or at the same time)
-    const { count, error: countError } = await supabase
-      .from('waitlist')
-      .select('*', { count: 'exact', head: true })
-      .lte('created_at', newUser.created_at)
-
-    if (countError) {
-      console.error('Error calculating waitlist position:', countError)
-      // Continue even if position calculation fails
-    }
-
-    const waitlistPosition = count || 1
-
     // Send verification email
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const verificationUrl = `${appUrl}/api/verify-email?token=${verificationToken}`
@@ -108,8 +95,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: true,
-        position: waitlistPosition,
-        message: 'Successfully joined waitlist! Please check your email to verify your address.' 
+        message: 'Please check your email to verify your address.' 
       },
       { status: 201 }
     )
