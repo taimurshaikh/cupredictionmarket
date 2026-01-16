@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await resend.emails.send({
-        from: 'CUAndaz <notifications@cuandaz.com>',
+        from: 'CUAndaz <noreply@onboarding.cuandaz.com>',
         to: validatedEmail,
         subject: 'Verify your email for CUAndaz',
         html: getVerificationEmailHtml({ verificationUrl }),

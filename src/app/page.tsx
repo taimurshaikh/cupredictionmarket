@@ -476,6 +476,12 @@ export default function Home() {
 
             {/* Nav CTA Button - Static (no shimmer) */}
             <Button 
+              onClick={() => {
+                inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                  inputRef.current?.focus();
+                }, 300);
+              }}
               className="h-11 rounded-xl px-6 text-sm font-semibold cta-premium-static text-white"
             >
               Join Now
@@ -789,10 +795,6 @@ export default function Home() {
             <p className="text-xs text-muted-foreground/70">
               © {new Date().getFullYear()} CUAndaz. Not affiliated with Columbia University. For entertainment only.
             </p>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/60">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs font-medium text-muted-foreground">Virtual Currency Only</span>
-            </div>
           </div>
         </div>
       </footer>
